@@ -1,8 +1,10 @@
-# Browser-Use noVNC Web View
+# Browser-Use Web View
 
-VNC/noVNC를 사용하여 실시간 웹 주소 접근 기반 가상 모니터를 제공하는 Docker 기반 시스템으로, **vnc**와 **agent** 두 개의 컨테이너로 구성되어 있습니다. `vnc` 컨테이너는 가상 디스플레이 서버와 VNC 서비스를 실행하고, `agent` 컨테이너는 `agent.py`와 같은 브라우저 자동화 스크립트를 실행합니다. 두 컨테이너는 공유된 X11 UNIX 소켓 볼륨을 통해 통신하며, 세션을 격리하고 보안을 보장합니다.
+[![BrowserUse](https://img.shields.io/badge/BrowserUse-0.11.2-black?style=flat&logo=github)](https://github.com/browser-use/browser-use)
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-success?style=flat&logo=fastapi)
 
-<br>
+Browser-Use Web View는 VNC/noVNC를 활용하여 browser-use 에이전트의 Headful 브라우저 화면을 웹 브라우저에서 실시간으로 확인할 수 있도록 설계된 컨테이너 기반 환경입니다. <br> vnc와 agent 컨테이너가 공유 X11 소켓으로 통신하며 세션 격리와 보안을 유지하는 구조로, 자동화된 브라우저의 동작을 가상 모니터로 안전하게 시각화합니다.
 
 ## 시스템 아키텍처
 
@@ -11,7 +13,6 @@ VNC/noVNC를 사용하여 실시간 웹 주소 접근 기반 가상 모니터를
 ### 멀티 세션 플로우
 <img width="1138" height="570" alt="image" src="https://github.com/user-attachments/assets/8379e126-1940-4096-8857-3cdb141f4ad6" />
 
-<br>
 
 각 사용자가 browser-use task 실행을 요청하면 오케스트레이터가 새로운 세션 생성을 트리거합니다. 이때 개별 세션마다 VNC/agent 컨테이너 쌍이 독립적으로 기동되고, 해당 세션에 대해 noVNC를 통한 실시간 가상 모니터 화면이 제공됩니다. 각 세션은 Docker 네임스페이스와 전용 X11 소켓 볼륨을 기반으로 완전히 격리되어 실행되며, 이를 통해 세션 간 디스플레이 데이터가 안전하게 분리됩니다.
 
@@ -25,7 +26,6 @@ VNC/noVNC를 사용하여 실시간 웹 주소 접근 기반 가상 모니터를
 ![multisession](https://github.com/user-attachments/assets/f7d62f1d-575e-475a-8462-a9167ee1a9d6)
 
 
-
 ## Containers
 ### vnc
 
@@ -37,7 +37,6 @@ VNC/noVNC를 사용하여 실시간 웹 주소 접근 기반 가상 모니터를
 - Browser-use Python 스크립트 실행 (예: `agent.py`)
 - `vnc` 컨테이너와 X11 소켓 볼륨을 공유하여 가상 디스플레이에 출력 렌더링
 
-<br>
 
 ## 시작하기
 
@@ -61,7 +60,19 @@ cd browser-use-vnc/
 
 > 이 파일들은 Docker Compose에 의해 자동으로 로드되어 agent 및 orchestrator 컨테이너를 구성하고 실행합니다.
 
-### 3. FastAPI Orchestrator 실행
+### 3. Docker 이미지 사전 빌드
+
+Orchestrator를 시작하기 전에 Docker 이미지를 미리 빌드하여 세션 생성 시 긴 지연을 방지하세요:
+
+```bash
+./prebuild.sh
+```
+
+이 스크립트는 VNC와 agent 이미지를 모두 빌드합니다. 완료되면 이미지가 이미 준비되어 있으므로 세션 생성이 훨씬 빨라집니다.
+
+> **참고**: 이 스크립트를 실행하기 전에 Docker Desktop이 실행 중인지 확인하세요.
+
+### 4. FastAPI Orchestrator 실행
 
 1. **orchestrator 폴더에서 가상환경 생성 및 활성화**
 
@@ -84,7 +95,7 @@ pip install -r requirements.txt
 uvicorn app_orchestrator:app --host 0.0.0.0 --port 8000
 ```
 
-### 4. 새 세션 생성
+### 5. 새 세션 생성
 
 POST 요청을 보내 새로운 VNC/agent 세션을 생성합니다:
 
