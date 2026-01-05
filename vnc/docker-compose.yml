@@ -1,7 +1,6 @@
-version: "3.9"
-
 services:
   vnc:
+    image: browser-use-vnc:latest
     build: .
     environment:
       - DISPLAY=:99
@@ -16,6 +15,7 @@ services:
       - x11sock:/tmp/.X11-unix
 
   agent:
+    image: browser-use-agent:latest
     build:
       context: ../agent
       dockerfile: Dockerfile
