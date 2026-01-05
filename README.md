@@ -1,19 +1,19 @@
-## 🇰🇷 [한국어 보기](README.ko.md)
+# Browser-Use Web View
 
-# Browser-Use noVNC Web View
+[![BrowserUse](https://img.shields.io/badge/BrowserUse-0.11.2-black?style=flat&logo=github)](https://github.com/browser-use/browser-use)
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-success?style=flat&logo=fastapi)
 
-A Docker-based system providing a real-time web address access–based virtual monitor using VNC/noVNC, composed of two containers: **vnc** and **agent**. The `vnc` container runs the virtual display server and VNC services, while the `agent` container executes browser automation scripts such as `agent.py`. The two containers communicate via a shared X11 UNIX socket volume, ensuring session isolation and security.
+Browser-Use Web View is a container-based environment designed to provide real-time web access to the headful browser of a browser-use agent via VNC/noVNC. <br> The system features a structure where vnc and agent containers communicate through a shared X11 UNIX socket, ensuring session isolation and security while safely visualizing automated browser operations on a virtual monitor.
 
 
 ## System Architecture 
-
 
 <img width="996" height="933" alt="473523324-d86b43ec-4204-4a94-ae86-01c63c39dfe1" src="https://github.com/user-attachments/assets/4431006a-1656-49ce-b97c-07b719b23743" />
 
 ### Multi-Session Flow
 <img width="1138" height="570" alt="image" src="https://github.com/user-attachments/assets/8379e126-1940-4096-8857-3cdb141f4ad6" />
 
-<br>
 
 When a user requests the execution of a browser-use task, the orchestrator triggers the creation of a new session. For each session, a VNC/agent container pair is launched independently, and a real-time virtual monitor screen is provided via noVNC. Each session runs completely isolated using Docker namespaces and dedicated X11 socket volumes, ensuring that display data is securely separated between sessions.
 
@@ -40,7 +40,6 @@ When a user requests the execution of a browser-use task, the orchestrator trigg
 - Executes browser-use Python scripts (e.g., `agent.py`)
 - Shares the X11 socket volume with the `vnc` container to render output to the virtual display
 
-<br>
 
 ## Getting Started
 
@@ -64,8 +63,19 @@ cd browser-use-vnc/
 
 > These files are automatically loaded by Docker Compose to configure and run the agent and orchestrator containers.
 
+### 3. Pre-build Docker Images
 
-### 3. Run the FastAPI Orchestrator
+Before starting the orchestrator, pre-build the Docker images to avoid long delays during session creation:
+
+```bash
+./prebuild.sh
+```
+
+This script will build both the VNC and agent images. Once completed, session creation will be much faster since the images are already available.
+
+> **Note**: Make sure Docker Desktop is running before executing this script.
+
+### 4. Run the FastAPI Orchestrator
 
 To run the orchestrator service that manages session creation, follow these steps:
 
@@ -85,7 +95,7 @@ To run the orchestrator service that manages session creation, follow these step
     uvicorn app_orchestrator:app --host 0.0.0.0 --port 8000 --reload
     ```
 
-### 4. Create a New Session
+### 5. Create a New Session
 
 Send a POST request to create a new VNC/agent session:
 
